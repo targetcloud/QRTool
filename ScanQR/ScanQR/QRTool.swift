@@ -3,7 +3,7 @@
 //
 //  Created by targetcloud on 2016/12/4.
 //  Copyright © 2016年 targetcloud. All rights reserved.
-//
+//  http://blog.csdn.net/callzjy
 
 import UIKit
 import AVFoundation
@@ -28,8 +28,8 @@ class QRTool: NSObject {
         output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
         return output
     }()
-    private lazy var session: AVCaptureSession = AVCaptureSession()
-    fileprivate lazy var previewLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
+    lazy var session: AVCaptureSession = AVCaptureSession()
+    lazy var previewLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
     fileprivate var scanResultBlock: ScanResultBlock?
     fileprivate var isDrawFrame: Bool = false
     fileprivate var drawLindWidth:CGFloat = 1
@@ -40,11 +40,13 @@ class QRTool: NSObject {
         self.isDrawFrame = isDrawFrame
         self.drawStrokeColor = drawStrokeColor
         self.drawLindWidth = drawLindWidth
-        if session.canAddInput(input) && session.canAddOutput(output) {
-            session.addInput(input)
-            session.addOutput(output)
-        }else {
-            return
+        if session.inputs.count==0 && session.outputs.count==0{
+            if session.canAddInput(input) && session.canAddOutput(output) {
+                session.addInput(input)
+                session.addOutput(output)
+            }else {
+                return
+            }
         }
         output.metadataObjectTypes = [AVMetadataObjectTypeQRCode]
         if inView.layer.sublayers == nil {
@@ -149,6 +151,7 @@ extension QRTool:  AVCaptureMetadataOutputObjectsDelegate {
             }
         }
         if scanResultBlock != nil {
+            removeFrameLayer()
             scanResultBlock!(resultStrs)//代理转闭包
         }
     }

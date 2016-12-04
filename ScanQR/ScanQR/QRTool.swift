@@ -1,6 +1,5 @@
 //
 //  QRTool.swift
-//  GeneratorQRCode
 //
 //  Created by targetcloud on 2016/12/4.
 //  Copyright © 2016年 targetcloud. All rights reserved.
@@ -14,7 +13,7 @@ typealias ScanResultBlock = ([String]) -> ()
 class QRTool: NSObject {
     static let shareInstance = QRTool()
     
-    lazy var input: AVCaptureDeviceInput? = {
+    private lazy var input: AVCaptureDeviceInput? = {
         let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
         var input: AVCaptureDeviceInput?
         do {
@@ -25,20 +24,15 @@ class QRTool: NSObject {
         }
     }()
     
-    lazy var output: AVCaptureMetadataOutput = {
+    private lazy var output: AVCaptureMetadataOutput = {
         let output = AVCaptureMetadataOutput()
         output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
         return output
     }()
     
-    lazy var session: AVCaptureSession = {
-        return AVCaptureSession()
-    }()
+    private lazy var session: AVCaptureSession = AVCaptureSession()
     
-    lazy var previewLayer: AVCaptureVideoPreviewLayer = {
-        let layer = AVCaptureVideoPreviewLayer(session: self.session)
-        return layer!
-    }()
+    fileprivate lazy var previewLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
     
     fileprivate var scanResultBlock: ScanResultBlock?
     fileprivate var isDrawFrame: Bool = false
@@ -98,8 +92,7 @@ class QRTool: NSObject {
     class func generatorQRCode(_ inputStr: String, centerImage: UIImage?,scaleXY: CGFloat = 10,drawSize:CGSize = CGSize(width: 80, height: 80)) -> UIImage {
         let filter = CIFilter(name: "CIQRCodeGenerator")
         filter?.setDefaults()
-        let data = inputStr.data(using: String.Encoding.utf8)
-        filter?.setValue(data, forKey: "inputMessage")
+        filter?.setValue(inputStr.data(using: String.Encoding.utf8), forKey: "inputMessage")
         filter?.setValue("M", forKey: "inputCorrectionLevel")
         var image = filter?.outputImage
         let transform = CGAffineTransform(scaleX: scaleXY, y: scaleXY)
@@ -151,7 +144,9 @@ extension QRTool:  AVCaptureMetadataOutputObjectsDelegate {
             if (obj as AnyObject).isKind(of: AVMetadataMachineReadableCodeObject.self){
                 let resultObj = previewLayer.transformedMetadataObject(for: obj as! AVMetadataObject)
                 let qrCodeObj = resultObj as! AVMetadataMachineReadableCodeObject
-                resultStrs.append(qrCodeObj.stringValue)
+                if !resultStrs.contains(qrCodeObj.stringValue){
+                    resultStrs.append(qrCodeObj.stringValue)
+                }
                 if isDrawFrame {
                     drawFrame(qrCodeObj)
                 }
@@ -163,14 +158,15 @@ extension QRTool:  AVCaptureMetadataOutputObjectsDelegate {
     }
     
     func drawFrame(_ qrCodeObj: AVMetadataMachineReadableCodeObject) {
-        let corners = qrCodeObj.corners
+        guard let corners = qrCodeObj.corners else { return }
         let shapLayer = CAShapeLayer()
         shapLayer.fillColor = UIColor.clear.cgColor
         shapLayer.strokeColor = drawStrokeColor.cgColor
+        shapLayer.fillColor = UIColor.clear.cgColor
         shapLayer.lineWidth = drawLindWidth
         let path = UIBezierPath()
         var index = 0
-        for corner in corners! {
+        for corner in corners {
             let point = CGPoint(dictionaryRepresentation:corner as! CFDictionary)
             if index == 0 {
                 path.move(to: point!)

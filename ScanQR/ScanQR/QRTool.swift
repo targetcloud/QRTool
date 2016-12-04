@@ -23,17 +23,13 @@ class QRTool: NSObject {
             return nil
         }
     }()
-    
     private lazy var output: AVCaptureMetadataOutput = {
         let output = AVCaptureMetadataOutput()
         output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
         return output
     }()
-    
     private lazy var session: AVCaptureSession = AVCaptureSession()
-    
     fileprivate lazy var previewLayer: AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: self.session)
-    
     fileprivate var scanResultBlock: ScanResultBlock?
     fileprivate var isDrawFrame: Bool = false
     fileprivate var drawLindWidth:CGFloat = 1

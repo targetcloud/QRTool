@@ -31,10 +31,10 @@ class ViewController: UIViewController {
     }
 
     func startScanAnimation() {
-        scanlineBottomConstraint.constant = scanBackView.frame.size.height
+        scanlineBottomConstraint.constant = -scanBackView.frame.size.height
         view.layoutIfNeeded()
         
-        scanlineBottomConstraint.constant = -scanBackView.frame.size.height
+        scanlineBottomConstraint.constant = scanBackView.frame.size.height
         UIView.animate(withDuration: 1, animations: {
             UIView.setAnimationRepeatCount(MAXFLOAT)
             self.view.layoutIfNeeded()
